@@ -2,10 +2,11 @@ from models.DescribedModel import DescribedModel
 
 
 class Tool:
-    def __init__(self, name, description, schema: DescribedModel):
+    def __init__(self, name, description, schema: DescribedModel, func):
         self.name = name
         self.description = description
         self.schema = schema
+        self.func = func
 
     def describe_tool(self):
         name = f"{self.name}: "
@@ -19,5 +20,5 @@ class Tool:
 
 def tool(name, description, schema):
     def decorator(func):
-        return Tool(name, description, schema)
+        return Tool(name, description, schema, func)
     return decorator

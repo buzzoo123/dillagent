@@ -1,6 +1,7 @@
 from tools.Tool import Tool
 from Dependencies.Prompts.Prompt import Prompt
 from Dependencies.Prompts.StructuredPrompt import StructuredPrompt
+from Dependencies.Parsers.IntermediateParser import IntermediateParser
 from typing import List
 from LLM.LLM import LLM
 
@@ -18,7 +19,7 @@ class BaseAgent:
         None
         """
         self.llm = llm
-        self.tools = self._make_tools(tools)
+        self.tools = tools  # self._make_tools(tools)
         if initial_prompt is None:
             initial_prompt = self._generate_initial_prompt()
         elif isinstance(initial_prompt, StructuredPrompt):
@@ -26,13 +27,13 @@ class BaseAgent:
                 initial_prompt)
         self.initial_prompt = initial_prompt.get_prompt_str()
 
-    def _make_tools(self, tool_functions):
-        tools = []
-        for func in tool_functions:
-            tool = Tool(name=func.name,
-                        description=func.description, schema=func.schema)
-            tools.append(tool)
-        return tools
+    # def _make_tools(self, tool_functions):
+    #     tools = []
+    #     for func in tool_functions:
+    #         tool = Tool(name=func.name,
+    #                     description=func.description, schema=func.schema)
+    #         tools.append(tool)
+    #     return tools
 
     def _generate_initial_prompt(self):
         """
@@ -87,3 +88,28 @@ class BaseAgent:
         if structured_prompt.footer:
             prompt += structured_prompt.footer
         return Prompt(prompt)
+
+    def run_loop(self, prompt):
+        intermediate_parser = IntermediateParser(['Action', 'Action Input'])
+        gave_final_answer = False
+        messages = [{"role": "system", "content": self.initial_prompt},
+                    {"role": "user", "content": prompt}]
+        while not gave_final_answer:
+            # Change the below line with an output parse to allow for other things.
+            response = self.llm.run(
+                prompt, self.initial_prompt, messages).choices[0].message.content
+            parsed = intermediate_parser.parse_values(response)
+            print(response)
+            observation = None
+            if len(parsed) > 0:
+                tool = parsed['Action']
+                if (tool == "Search"):
+                    observation = self.tools[0].func(input)
+                else:
+                    print(parsed['Action Input'])
+                    exit()
+            if (observation):
+                messages.extend([{"role": "assistant", "content": response},
+                                 {"role": "user", "content": f"Observation: {observation}"}])
+            else:
+                exit()
