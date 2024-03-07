@@ -4,27 +4,26 @@ from openai import OpenAI
 
 
 class OpenAILLM(LLM):
-    def __init__(self, config: LLMConfig):
-        super().__init__(config)
+    def __init__(self, config: LLMConfig, messages=[]):
+        super().__init__(config, messages)
 
-    def run(self, prompt, system_prompt, messages=None):
+    def run(self, prompt):
         if self.config.type == 'API':
-            response = self._call_api(prompt, system_prompt, messages=messages)
+            response = self._call_api(prompt)
             return response
 
         else:
             raise ValueError(
                 "OpenAILLM only works with type: 'API'. Consider using CustomLLM class for other use cases.")
 
-    def _call_api(self, prompt, system_prompt, messages=None):
-        if messages == None:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ]
+    def _call_api(self, prompt):
+        self.add_messages([{"role": "user", "content": prompt}])
         client = OpenAI(base_url=self.config.path, api_key=self.config.api_key)
         completion = client.chat.completions.create(
             model=self.config.model,
-            messages=messages
+            messages=self.messages
         )
         return completion
+
+    def add_messages(self, messages):
+        self.messages.extend(messages)
