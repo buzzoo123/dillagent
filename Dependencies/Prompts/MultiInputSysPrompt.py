@@ -49,7 +49,7 @@ Action:
 ```
 $JSON_BLOB
 ```
-Observation: action result
+Observation: tool output
 ... (repeat Thought/Action/Observation N times)
 Thought: I know what to respond
 Action:
@@ -59,7 +59,9 @@ Action:
   "action_input": "Final response to human"
 }}
 
-Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation'''
+Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Reminder that the Observation is the output from the tool and not actually from the User.
+
+Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation'''
 
         self.prompt_str = prompt
         return prompt

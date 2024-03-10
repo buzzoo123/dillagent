@@ -1,6 +1,7 @@
 import random
 from agents.agents.AdvancedAgent import AdvancedAgent
 from tools.Tool import tool
+from typing import List
 from models.DescribedModel import DescribedModel, Field
 from LLM.OpenAILLM import OpenAILLM
 from LLM.LLMConfig import LLMConfig
@@ -13,6 +14,7 @@ from dotenv import load_dotenv
 import os
 from Dependencies.Prompts.MultiInputSysPrompt import MultiInputSysPrompt
 from Dependencies.Parsers.Intermediate.JsonParser import JsonParser
+from termcolor import colored
 
 
 load_dotenv()
@@ -33,6 +35,16 @@ class VibeSchema(DescribedModel):
                       description="The vibe of the music being made in the form of a String")
     length: str = Field(...,
                         description="The length of the song in seconds represented as an int")
+
+
+class Route(DescribedModel):
+    length: int = Field(...,
+                        description="An int representing the route length")
+    name: str = Field(..., description="The name of the route as a string")
+
+
+class Map(DescribedModel):
+    routes: List[Route] = Field(..., description="A list of route objects")
 
 
 @tool(name="Search", description="Useful for searching for information", schema=SearchSchema)
@@ -60,9 +72,9 @@ def search(query: str):
 @tool(name="Quote Generator", description="Useful for generating motivational quotes", schema=QuoteModel)
 def generate_quote(topic: str):
     arr = [
-        "You will one day be Eric",
-        "You will one day be Kieran",
-        "I eat hairy assholes",
+        "You will one day be as financially stable as Eric!",
+        "You will one day be as smart as Kieran the great!",
+        "One day, you will be a star!",
     ]
     random_element = random.choice(arr)
     return random_element
@@ -72,8 +84,14 @@ def generate_quote(topic: str):
 def make_music(vibe: str, length: str):
     with open('example.txt', 'w') as file:
         file.write(vibe)
-        file.write("Length: ", length)
+        file.write("Length: " + str(length))
     return "music file generated called example.txt"
+
+
+@tool(name="Make Map", description="Useful for making maps", schema=Map)
+def make_map(routes: List[Route]):
+    print(routes)
+    return "Map generated in file called map.txt"
 
 
 # initial_prompt = StructuredPrompt(header, loop_conditions)
@@ -83,12 +101,15 @@ llm = OpenAILLM(LLMConfig(
 
 sys_prompt = MultiInputSysPrompt("You are a helpful AI Assistant.")
 
-agent = AdvancedAgent(llm, [search, make_music, generate_quote], sys_prompt)
+agent = AdvancedAgent(
+    llm, [search, make_music, generate_quote, make_map], sys_prompt)
 
 print(agent.sys_prompt.prompt_str)
 
 runner = ConversationalExecutor(agent, JsonParser(
     ['action', 'action_input'], 'action', 'action_input'))
 
+prompt = input(colored("What can I help you with?\n", "green"))
 while (True):
-    print(runner.run(input("What can I help you with?\n")))
+    print(colored(runner.run(prompt), "green"))
+    prompt = input("")
