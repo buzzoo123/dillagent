@@ -1,5 +1,5 @@
-from agents.BaseAgent import BaseAgent
-from Dependencies.Parsers.IntermediateParser import IntermediateParser
+from agents.agents.BaseAgent import BaseAgent
+from Dependencies.Parsers.Intermediate.IntermediateParser import IntermediateParser
 
 
 class AgentExecutor:
@@ -22,6 +22,8 @@ class AgentExecutor:
             to_input = parsed['Action Input']
             observation = None
             if to_call.upper() == "RESPONSE TO HUMAN":
+                #!Line below is for debugging
+                print(self.agent.llm.messages)
                 return to_input
 
             for tool in self.agent.tools:

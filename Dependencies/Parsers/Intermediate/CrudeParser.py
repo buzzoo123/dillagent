@@ -1,6 +1,9 @@
-class IntermediateParser():
-    def __init__(self, key_words):
-        self.keys = key_words
+from Dependencies.Parsers.Intermediate.IntermediateParser import IntermediateParser
+
+
+class CrudeParser(IntermediateParser):
+    def __init__(self, keys):
+        super().__init__(keys)
 
     def parse_values(self, text):
         parsed_values = {}

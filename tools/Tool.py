@@ -14,8 +14,8 @@ class Tool:
         input_info = "\n\tThe input to this tool should be:\n"
         field_descriptions = self.schema.get_field_descriptions()
         for field, description in field_descriptions.items():
-            field_type = self.schema.__annotations__[field].__name__
-            input_info += f"\tParamater: {field} - {description}\n"
+            # field_type = self.schema.__annotations__[field].__name__
+            input_info += f"\t{field}: {description}\n"
         return name + self.description + input_info
 
 

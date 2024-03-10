@@ -1,4 +1,4 @@
-from BaseAgent import BaseAgent
+from agents.agents.BaseAgent import BaseAgent
 from Dependencies.Prompts.Prompt import Prompt
 
 

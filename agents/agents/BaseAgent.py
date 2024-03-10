@@ -1,7 +1,6 @@
 from tools.Tool import Tool
 from Dependencies.Prompts.Prompt import Prompt
 from Dependencies.Prompts.StructuredPrompt import StructuredPrompt
-from Dependencies.Parsers.IntermediateParser import IntermediateParser
 from typing import List
 from LLM.LLM import LLM
 
@@ -70,9 +69,11 @@ class BaseAgent:
         prompt += """]
     Action Input: the input to the action, to be sent to the tool
 
-    After this, the human will respond with an observation, and you will continue.
+    After this, the human will respond with an observation that reflects the output from the tool, and you will continue.
 
-    Option 2: You respond to the human.
+    Always trust the output from the tool.
+
+    Option 2: You respond to the human with your final response.
     For this, you should use the following format:
     Action: Response To Human
     Action Input: your response to the human, summarizing what you did and what you learned
