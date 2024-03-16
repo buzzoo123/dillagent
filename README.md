@@ -4,15 +4,24 @@ DillAgent is an AI agent library based on the principles of *ReAct: Synergizing 
 
 ## Overview
 
-DillAgent empowers developers by offering a high-level framework while allowing customization of prompts, formatting, and logic patterns. It provides a structured environment for creating production-ready LLM-powered applications. The key abstractions in DillAgent include:
+DillAgent empowers developers by offering a high-level framework while allowing customization of prompts, formatting, and logic patterns - which is necessary when using a non-deterministic technology like an LLM. It provides a structured environment for creating production-ready LLM-powered applications. The key abstractions in DillAgent include:
 
 1. **LLM**: A wrapper for any provided Language Model, accessible via API or executable path, serving as the engine for any AI Agent framework.
    
 2. **Tool**: Contains an LLM-callable function with user-defined descriptions/instructions to provide to the LLM.
    
-3. **Agent**: Comprises an LLM, Tools that the LLM can use, and a System Prompt to set up the environment for an AI Agent loop, regardless of specific logic implementation.
+3. **Agent**: Comprised of an LLM, Tools that the LLM can use, and a System Prompt to set up the environment for an AI Agent loop regardless of specific logic implementation.
    
 4. **Agent Executor**: Utilizes an Agent, intermediate parser, and output parser in a loop, allowing developers to implement their own logic to achieve various tasks using LLM reasoning.
+
+## High Level Usage:
+
+1. Define Tools and Schemas for the parameters of the tool fucntions using Described Models
+2. Instantiate an LLM and SysPrompt (Abstraction for system prompt)
+3. Instantiate an Agent using the LLM and SysPrompt
+4. Create an Agent Executor to run the agent
+
+It should be noted that AgentExecutors can be implemented into loops for continuous chats with conversational memory.
 
 ## Basic Example Usage
 
@@ -50,6 +59,8 @@ prompt = input("What can I help you with?\n")
 
 print(runner.run(prompt))
 ```
+
+View the project documentation for further implementation details.
 
 ## Demo
 
