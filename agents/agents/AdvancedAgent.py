@@ -21,9 +21,7 @@ class AdvancedAgent(BaseAgent):
         self.tools = tools
         self.sys_prompt = sys_prompt
         self.sys_prompt.generate_prompt(tools)
-        self.llm.add_messages([
-            {"role": "system", "content": self.sys_prompt.prompt_str},
-        ])
+        self.llm.add_sys_prompt(self.sys_prompt.prompt_str)
 
     def run(self, prompt):
         return self.llm.run(prompt)

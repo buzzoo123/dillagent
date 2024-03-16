@@ -72,8 +72,8 @@ def make_music(vibe: str):
 
 
 # initial_prompt = StructuredPrompt(header, loop_conditions)
-llm = OpenAILLM(LLMConfig(
-    model="gpt-3.5-turbo-0125", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
+# llm = OpenAILLM(LLMConfig(
+#     model="gpt-3.5-turbo-0125", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
 
 agent = BaseAgent(llm, [search, make_music, generate_quote])
 

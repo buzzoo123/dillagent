@@ -12,11 +12,11 @@ class JsonParser(IntermediateParser):
         start_pos = text.find('{')
         end_pos = text.rfind('}') + 1
         if start_pos == -1 or end_pos == -1:
-            raise ValueError("JSON blob not found in the provided text.")
+            raise KeyError("JSON blob not found in the provided text.")
 
         # Extract the JSON blob from the text
         json_blob = text[start_pos:end_pos]
-
+        print(json_blob)
         # Parse the JSON blob
         try:
             data = json.loads(json_blob)

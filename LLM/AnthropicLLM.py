@@ -1,11 +1,12 @@
 from LLM.LLMConfig import LLMConfig
 from LLM.LLM import LLM
-from openai import OpenAI
+import anthropic
 
 
-class OpenAILLM(LLM):
+class AnthropicLLM(LLM):
     def __init__(self, config: LLMConfig, messages=[]):
         super().__init__(config, messages)
+        self.sys_prompt = None
 
     def run(self, prompt):
         if self.config.type == 'API':
@@ -18,17 +19,20 @@ class OpenAILLM(LLM):
 
     def _call_api(self, prompt):
         self.add_messages([{"role": "user", "content": prompt}])
-        client = OpenAI(base_url=self.config.path, api_key=self.config.api_key)
-        completion = client.chat.completions.create(
-            model=self.config.model,
-            messages=self.messages
+        client = anthropic.Anthropic(
+            api_key=self.config.api_key,
         )
-        return completion.choices[0].message.content
+        message = client.messages.create(
+            model="claude-3-sonnet-20240229",
+            max_tokens=1000,
+            messages=self.messages,
+            temperature=0,
+            system=self.sys_prompt
+        )
+        return message
 
     def add_messages(self, messages):
         self.messages.extend(messages)
 
     def add_sys_prompt(self, sys_prompt):
-        self.messages.extend([
-            {"role": "system", "content": sys_prompt},
-        ])
+        self.sys_prompt = sys_prompt

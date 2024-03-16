@@ -8,7 +8,6 @@ from Dependencies.Parsers.Intermediate.IntermediateParser import IntermediatePar
 class BaseAgentExecutor(ABC):
     def __init__(self, agent: BaseAgent, intermediate_parser: IntermediateParser):
         self.agent = agent
-        # Eventually get parser keywords from PromptTemplate
         self.im_parser = intermediate_parser
 
     @abstractmethod

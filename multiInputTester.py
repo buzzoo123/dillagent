@@ -5,6 +5,7 @@ from typing import List
 from models.DescribedModel import DescribedModel, Field
 from LLM.OpenAILLM import OpenAILLM
 from LLM.LLMConfig import LLMConfig
+from LLM.AnthropicLLM import AnthropicLLM
 from agents.Executors.AgentExecutor import AgentExecutor
 from agents.Executors.ConversationalExecutor import ConversationalExecutor
 import requests
@@ -47,6 +48,11 @@ class Map(DescribedModel):
     routes: List[Route] = Field(..., description="A list of route objects")
 
 
+class Question(DescribedModel):
+    question: str = Field(...,
+                          description="An example SAT question in the form of a String")
+
+
 @tool(name="Search", description="Useful for searching for information", schema=SearchSchema)
 def search(query: str):
     res = ""
@@ -82,7 +88,7 @@ def generate_quote(topic: str):
 
 @tool(name="Make Music", description="Useful for making music", schema=VibeSchema)
 def make_music(vibe: str, length: str):
-    with open('example.txt', 'w') as file:
+    with open(vibe + '.txt', 'w') as file:
         file.write(vibe)
         file.write("Length: " + str(length))
     return "music file generated called example.txt"
@@ -94,15 +100,22 @@ def make_map(routes: List[Route]):
     return "Map generated in file called map.txt"
 
 
-# initial_prompt = StructuredPrompt(header, loop_conditions)
+@tool(name="Make Pracitce SAT Question", description="Useful for making practice SAT questions and outputting them in PDF format", schema=Question)
+def make_sat(question: str):
+    print(question)
+    return "PDF Generated as sat.txt"
+
+
 llm = OpenAILLM(LLMConfig(
     model="gpt-3.5-turbo-0125", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
 # model="gpt-4", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
+# llm = AnthropicLLM(LLMConfig(
+# model="claude-3-sonnet-20240229", api_key=os.environ.get('CLAUDE_API_KEY'), path="https://api.anthropic.com/v1/messages"),)
 
 sys_prompt = MultiInputSysPrompt("You are a helpful AI Assistant.")
 
 agent = AdvancedAgent(
-    llm, [search, make_music, generate_quote, make_map], sys_prompt)
+    llm, [search, make_music, generate_quote, make_map, make_sat], sys_prompt)
 
 print(agent.sys_prompt.prompt_str)
 

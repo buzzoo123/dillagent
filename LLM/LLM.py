@@ -9,6 +9,7 @@ class LLM(ABC):
 
     @abstractmethod
     def run(self, prompt):
+        # Should return string response
         pass
 
     @abstractmethod
@@ -17,4 +18,8 @@ class LLM(ABC):
 
     @abstractmethod
     def add_messages(self, messages):
+        pass
+
+    @abstractmethod
+    def add_sys_prompt(self, sys_prompt):
         pass
