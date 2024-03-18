@@ -1,5 +1,5 @@
-from LLM.LLMConfig import LLMConfig
-from LLM.LLM import LLM
+from .LLMConfig import LLMConfig
+from .LLM import LLM
 import anthropic
 
 

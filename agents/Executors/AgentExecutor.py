@@ -1,5 +1,5 @@
 from agents.agents.BaseAgent import BaseAgent
-from Dependencies.Parsers.Intermediate.IntermediateParser import IntermediateParser
+from dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
 
 
 class AgentExecutor:

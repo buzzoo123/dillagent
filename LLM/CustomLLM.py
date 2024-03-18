@@ -1,10 +1,10 @@
-from LLM.LLMConfig import LLMConfig
-from LLM.LLM import LLM
+from .LLMConfig import LLMConfig
+from .LLM import LLM
 from openai import OpenAI
 
 
 class CustomLLM(LLM):
-    def __init__(self, config: LLMConfig, api_call: function):
+    def __init__(self, config: LLMConfig, api_call: callable):
         super.__init__(config)
         self.api_call = api_call
 

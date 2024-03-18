@@ -1,5 +1,5 @@
 from typing import List
-from Dependencies.Prompts.SysPrompt import SysPrompt
+from dependencies.prompts.SysPrompt import SysPrompt
 from tools.Tool import Tool
 
 

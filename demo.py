@@ -1,22 +1,18 @@
 import random
-from agents.agents.AdvancedAgent import AdvancedAgent
-from tools.Tool import tool
+import os
+from agents.agents import AdvancedAgent
+from tools import tool
 from typing import List
-from models.DescribedModel import DescribedModel, Field
-from LLM.OpenAILLM import OpenAILLM
-from LLM.LLMConfig import LLMConfig
-from LLM.AnthropicLLM import AnthropicLLM
-from agents.Executors.AgentExecutor import AgentExecutor
-from agents.Executors.ConversationalExecutor import ConversationalExecutor
+from models import DescribedModel, Field
+from llm import OpenAILLM, LLMConfig
+from agents.executors import ConversationalExecutor
 import requests
 from bs4 import BeautifulSoup
 from googlesearch import search as google_search
 from dotenv import load_dotenv
-import os
-from Dependencies.Prompts.MultiInputSysPrompt import MultiInputSysPrompt
-from Dependencies.Parsers.Intermediate.JsonParser import JsonParser
+from dependencies.prompts import MultiInputSysPrompt
+from dependencies.parsers.intermediate import JsonParser
 from termcolor import colored
-
 
 load_dotenv()
 
@@ -107,10 +103,8 @@ def make_sat(question: str):
 
 
 llm = OpenAILLM(LLMConfig(
-    model="gpt-3.5-turbo-0125", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
-# model="gpt-4", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
-# llm = AnthropicLLM(LLMConfig(
-# model="claude-3-sonnet-20240229", api_key=os.environ.get('CLAUDE_API_KEY'), path="https://api.anthropic.com/v1/messages"),)
+    # model="gpt-3.5-turbo-0125", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
+    model="gpt-4", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
 
 sys_prompt = MultiInputSysPrompt("You are a helpful AI Assistant.")
 

@@ -1,5 +1,5 @@
-from agents.agents.BaseAgent import BaseAgent
-from Dependencies.Prompts.Prompt import Prompt
+from .BaseAgent import BaseAgent
+from dependencies.prompts.Prompt import Prompt
 
 
 class CustomPromptAgent(BaseAgent):

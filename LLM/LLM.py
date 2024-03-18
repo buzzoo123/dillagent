@@ -1,4 +1,4 @@
-from LLM.LLMConfig import LLMConfig
+from .LLMConfig import LLMConfig
 from abc import ABC, abstractmethod
 
 

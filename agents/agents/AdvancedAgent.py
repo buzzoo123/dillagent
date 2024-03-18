@@ -1,8 +1,8 @@
-from tools.Tool import Tool
-from agents.agents.BaseAgent import BaseAgent
-from Dependencies.Prompts.SysPrompt import SysPrompt
+from tools import Tool
+from .BaseAgent import BaseAgent
+from dependencies.prompts.SysPrompt import SysPrompt
 from typing import List
-from LLM.LLM import LLM
+from llm.LLM import LLM
 
 
 class AdvancedAgent(BaseAgent):

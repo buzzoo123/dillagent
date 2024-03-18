@@ -1,8 +1,7 @@
-from tools.Tool import Tool
-from Dependencies.Prompts.Prompt import Prompt
-from Dependencies.Prompts.StructuredPrompt import StructuredPrompt
+from dependencies.prompts.Prompt import Prompt
+from dependencies.prompts.StructuredPrompt import StructuredPrompt
 from typing import List
-from LLM.LLM import LLM
+from llm.LLM import LLM
 
 
 class BaseAgent:

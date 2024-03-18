@@ -1,6 +1,5 @@
-from agents.agents.BaseAgent import BaseAgent
-from agents.Executors.BaseAgentExecutor import BaseAgentExecutor
-from Dependencies.Parsers.Intermediate.IntermediateParser import IntermediateParser
+from agents.executors.BaseAgentExecutor import BaseAgentExecutor
+from dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
 
 
 class ConversationalExecutor(BaseAgentExecutor):

@@ -1,4 +1,4 @@
-from Dependencies.Parsers.Intermediate.IntermediateParser import IntermediateParser
+from dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
 
 
 class CrudeParser(IntermediateParser):
