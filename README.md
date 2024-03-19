@@ -29,7 +29,8 @@ It should be noted that AgentExecutors can be implemented into loops for continu
 
 ```bash
 pip install dillagent
-
+```
+Then using python...
 ```python
 from dillagent.models import DescribedModel, Field
 from dillagent.agents.executors import ConversationalExecutor
