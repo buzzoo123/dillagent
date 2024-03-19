@@ -1,4 +1,4 @@
-from dependencies.prompts.Prompt import Prompt
+from .Prompt import Prompt
 
 # Needs rework
 

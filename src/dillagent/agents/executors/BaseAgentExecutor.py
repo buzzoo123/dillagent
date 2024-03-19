@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from tools.Tool import Tool
+from ...tools.Tool import Tool
 from typing import List
-from agents.agents.BaseAgent import BaseAgent
-from dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
+from ..agents.BaseAgent import BaseAgent
+from ...dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
 
 
 class BaseAgentExecutor(ABC):

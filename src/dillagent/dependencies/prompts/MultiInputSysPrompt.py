@@ -1,6 +1,6 @@
 from typing import List
-from dependencies.prompts.SysPrompt import SysPrompt
-from tools.Tool import Tool
+from .SysPrompt import SysPrompt
+from ...tools.Tool import Tool
 
 
 class MultiInputSysPrompt(SysPrompt):

@@ -1,4 +1,4 @@
-from models.DescribedModel import DescribedModel
+from ..models.DescribedModel import DescribedModel
 
 
 class Tool:

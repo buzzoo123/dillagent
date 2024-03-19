@@ -1,6 +1,6 @@
 import json
 
-from dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
+from .IntermediateParser import IntermediateParser
 
 
 class JsonParser(IntermediateParser):

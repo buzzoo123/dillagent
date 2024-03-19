@@ -1,17 +1,17 @@
 import random
 import os
-from agents.agents import AdvancedAgent
+from src.dillagent.agents.agents import AdvancedAgent
 from tools import tool
 from typing import List
 from models import DescribedModel, Field
 from llm import OpenAILLM, LLMConfig
-from agents.executors import ConversationalExecutor
+from src.dillagent.agents.executors import ConversationalExecutor
 import requests
 from bs4 import BeautifulSoup
 from googlesearch import search as google_search
 from dotenv import load_dotenv
-from dependencies.prompts import MultiInputSysPrompt
-from dependencies.parsers.intermediate import JsonParser
+from src.dillagent.dependencies.prompts import MultiInputSysPrompt
+from src.dillagent.dependencies.parsers.intermediate import JsonParser
 from termcolor import colored
 
 load_dotenv()

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from tools.Tool import Tool
+from ...tools.Tool import Tool
 from typing import List
 
 
