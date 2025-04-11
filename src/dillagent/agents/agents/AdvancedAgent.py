@@ -1,4 +1,4 @@
-from tools import Tool
+from ...tools import Tool
 from .BaseAgent import BaseAgent
 from ...dependencies.prompts.SysPrompt import SysPrompt
 from typing import List

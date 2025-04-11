@@ -1,10 +1,10 @@
 import random
 import os
 from src.dillagent.agents.agents import AdvancedAgent
-from tools import tool
+from src.dillagent.tools import tool
 from typing import List
-from models import DescribedModel, Field
-from llm import OpenAILLM, LLMConfig
+from src.dillagent.models import DescribedModel, Field
+from src.dillagent.llm import OpenAILLM, LLMConfig
 from src.dillagent.agents.executors import ConversationalExecutor
 import requests
 from bs4 import BeautifulSoup
@@ -104,7 +104,7 @@ def make_sat(question: str):
 
 llm = OpenAILLM(LLMConfig(
     # model="gpt-3.5-turbo-0125", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
-    model="gpt-4", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
+    model="gpt-4o-2024-08-06", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
 
 sys_prompt = MultiInputSysPrompt("You are a helpful AI Assistant.")
 
