@@ -1,6 +1,5 @@
 from .LLMConfig import LLMConfig
 from .LLM import LLM
-from openai import OpenAI
 
 
 class CustomLLM(LLM):

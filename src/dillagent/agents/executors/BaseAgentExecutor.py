@@ -11,5 +11,7 @@ class BaseAgentExecutor(ABC):
         self.im_parser = intermediate_parser
 
     @abstractmethod
-    def run(self, prompt):
+    async def run(self, prompt):
         pass
+    
+    #Make a use_tool method when extending if tools should be available for use.

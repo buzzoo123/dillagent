@@ -5,8 +5,8 @@ from typing import List
 from ...llm.LLM import LLM
 
 
-class AdvancedAgent(BaseAgent):
-    def __init__(self, llm: LLM, tools: List, sys_prompt: SysPrompt):
+class StarterAgent(BaseAgent):
+    def __init__(self, llm: LLM, tools: List, sys_prompt: SysPrompt, name: str = "Starter Agent"):
         """
         Initialize the BaseAgent with a list of tools and an optional initial prompt.
 
@@ -17,11 +17,7 @@ class AdvancedAgent(BaseAgent):
         Returns:
         None
         """
-        self.llm = llm
-        self.tools = tools
-        self.sys_prompt = sys_prompt
-        self.sys_prompt.generate_prompt(tools)
-        self.llm.add_sys_prompt(self.sys_prompt.prompt_str)
+        super().__init__()
 
     def run(self, prompt):
         return self.llm.run(prompt)

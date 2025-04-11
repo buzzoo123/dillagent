@@ -1,8 +1,9 @@
+from dillagent.agents.executors import BaseAgentExecutor
 from ..agents.BaseAgent import BaseAgent
 from ...dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
 
 
-class AgentExecutor:
+class AgentExecutor(BaseAgentExecutor):
     def __init__(self, agent):
         self.agent = agent
         # Eventually get parser keywords from PromptTemplate

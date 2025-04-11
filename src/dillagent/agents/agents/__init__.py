@@ -1,3 +1,3 @@
 from .BaseAgent import BaseAgent
-from .AdvancedAgent import AdvancedAgent
+from .StarterAgent import StarterAgent
 from .CustomPromptAgent import CustomPromptAgent
