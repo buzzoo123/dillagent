@@ -1,11 +1,11 @@
 import json
 
-from .IntermediateParser import IntermediateParser
+from .BaseIntermediateParser import BaseIntermediateParser
 
 
-class JsonParser(IntermediateParser):
-    def __init__(self, keys, tool_indicator, input_indicator):
-        super().__init__(keys, tool_indicator, input_indicator)
+class JsonParser(BaseIntermediateParser):
+    def __init__(self, keys):
+        super().__init__(keys)
 
     def parse_values(self, text):
         # Find the start and end positions of the JSON blob
@@ -25,7 +25,7 @@ class JsonParser(IntermediateParser):
 
         # Extract values based on keys
         values = {}
-        for key in self.keys:
+        for key in self.action_keys:
             if key in data:
                 value = data[key]
                 if isinstance(value, dict):

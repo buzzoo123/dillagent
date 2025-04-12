@@ -1,13 +1,15 @@
 import asyncio
-from typing import Dict, Set, Any, Optional, List
+from typing import Dict, Set, Any
 from ...agents.agents import BaseAgent
 from ..graphs.BaseAgentGraphExecutor import BaseAgentGraphExecutor
 from ..graphs.StarterAgentGraph import StarterAgentGraph
+from ...dependencies.parsers.intermediate.BaseIntermediateParser import BaseIntermediateParser
 
 class PlanningAgentGraphExecutor(BaseAgentGraphExecutor):
-    def __init__(self, graph: StarterAgentGraph):
+    def __init__(self, graph: StarterAgentGraph, intermediate_parser: BaseIntermediateParser):
         super().__init__(graph)
         self.graph = graph
+        self.im_parser = intermediate_parser
         
         # The planning agent controls execution flow
         self.planning_agent = None
@@ -17,6 +19,9 @@ class PlanningAgentGraphExecutor(BaseAgentGraphExecutor):
             raise ValueError("Graph must have input_agent defined")
         if self.graph.output_agent is None:
             raise ValueError("Graph must have output_agent defined")
+        
+        # Dictionary to keep track of all agents by name
+        self.agent_map = {}
     
     def set_planning_agent(self, agent: BaseAgent):
         """Set the planning agent that will control execution flow."""
@@ -41,148 +46,168 @@ class PlanningAgentGraphExecutor(BaseAgentGraphExecutor):
         if self.planning_agent is None:
             raise ValueError("Planning agent must be set before execution")
         
-        agent_outputs = {}
-        completed = set()
-        execution_state = {
-            "completed_agents": [],
-            "available_agents": [],
-            "pending_agents": [],
-            "current_plan": [],
-            "iteration": 0
-        }
+        # Build a map of agent names to agent objects for easy lookup
+        self._build_agent_map()
         
-        # Start with input agent
+        agent_outputs = {}
+        completed_agents = set()
+        iteration = 0
+        
+        # Start with input agent (which is the planning agent in your setup)
+        input_agent = self.graph.input_agent
         try:
-            output = await self.graph.input_agent.run(inputs=input_data)
-            agent_outputs[self.graph.input_agent] = output
-            completed.add(self.graph.input_agent)
-            execution_state["completed_agents"].append(self.graph.input_agent.name 
-                                                      if hasattr(self.graph.input_agent, "name") 
-                                                      else str(self.graph.input_agent))
+            output_text = await input_agent.run(inputs=input_data)
+            parsed_output = self._parse_agent_output(output_text)
+            agent_outputs[input_agent] = parsed_output
+            completed_agents.add(input_agent)
+            
+            print(f"Input agent completed: {input_agent.name if hasattr(input_agent, 'name') else str(input_agent)}")
         except Exception as e:
             raise RuntimeError(f"Input agent failed with error: {str(e)}") from e
         
-        # Initialize available agents
-        available_agents = self._get_ready_agents(completed)
-        execution_state["available_agents"] = [a.name if hasattr(a, "name") else str(a) for a in available_agents]
+        # Main planning loop - simpler dependency tracking
+        plan = parsed_output  # Initial plan from input agent (planning agent)
         
-        # Calculate all potential agents
-        all_agents = set(self.graph.edges.keys())
-        for downstreams in self.graph.edges.values():
-            all_agents.update(downstreams)
-        all_agents.discard(self.graph.input_agent)
-        all_agents.discard(self.graph.output_agent)
-        all_agents.discard(self.planning_agent)
-        
-        # Initialize pending agents
-        pending_agents = all_agents - available_agents - completed
-        execution_state["pending_agents"] = [a.name if hasattr(a, "name") else str(a) for a in pending_agents]
-        
-        # Main planning loop
-        while execution_state["iteration"] < 10:
-            execution_state["iteration"] += 1
+        while iteration < 10:  # Prevent infinite loops
+            iteration += 1
+            print(f"Iteration {iteration}")
+            print(f"Agent Outputs {agent_outputs}")
             
-            # Ask planning agent for next steps
-            planning_inputs = {
-                "execution_state": execution_state,
-                "previous_outputs": {k.name if hasattr(k, "name") else str(k): v for k, v in agent_outputs.items()},
-                "user_input": input_data
-            }
-            
-            plan = await self.planning_agent.run(inputs=planning_inputs)
-            agent_outputs[self.planning_agent] = plan
-            
-            if not isinstance(plan, dict):
-                raise RuntimeError("Planning agent must return a dictionary")
-                
             # Check for termination
             if plan.get("terminate", False):
+                print("Planning agent has decided to terminate the workflow")
                 break
                 
             # Get the next agents to run from the plan
             next_agents = []
             for agent_name in plan.get("next_agents", []):
                 # Find agent by name
-                target_agent = None
-                for agent in all_agents:
-                    if hasattr(agent, "name") and agent.name == agent_name:
-                        target_agent = agent
-                        break
-                
-                if target_agent is None:
-                    print(f"Warning: Agent '{agent_name}' from plan not found in graph")
-                    continue
-                    
-                # Check if agent is available (all dependencies satisfied)
-                if target_agent in available_agents:
-                    next_agents.append(target_agent)
+                if agent_name in self.agent_map:
+                    next_agents.append(self.agent_map[agent_name])
                 else:
-                    print(f"Warning: Agent '{agent_name}' is not available yet (dependencies not satisfied)")
+                    print(f"Warning: Agent '{agent_name}' from plan not found in graph")
             
             if not next_agents:
-                print("No valid agents to run in this iteration")
+                print("No agents to run in this iteration")
                 
-                # If no agents left to run, check if we should terminate
-                if not available_agents and not pending_agents:
-                    print("No more agents available to run, terminating execution")
+                # If the planning agent is already completed, we can ask it again
+                if self.planning_agent in completed_agents:
+                    planning_inputs = {
+                        "user_input": input_data,
+                        "previous_outputs": {k.name if hasattr(k, "name") else str(k): v for k, v in agent_outputs.items()},
+                        "iteration": iteration
+                    }
+                    
+                    plan_text = await self.planning_agent.run(inputs=planning_inputs)
+                    plan = self._parse_agent_output(plan_text)
+                    agent_outputs[self.planning_agent] = plan
+                    
+                    # Continue to next iteration with new plan
+                    continue
+                else:
+                    print("Planning agent not completed and no valid agents specified")
                     break
-                continue
                 
             # Run the selected agents in parallel
             tasks = []
             for agent in next_agents:
+                # Prepare inputs - include outputs from all completed agents
                 inputs = {
-                    dep.name: agent_outputs[dep]
-                    for dep in self.graph.reverse_edges[agent]
-                    if dep in agent_outputs
+                    agent_name: agent_outputs[agent_obj]
+                    for agent_name, agent_obj in self.agent_map.items()
+                    if agent_obj in completed_agents
                 }
-                # Add planning context
-                inputs["planning_context"] = plan.get("agent_inputs", {}).get(agent.name if hasattr(agent, "name") else str(agent), {})
                 
-                tasks.append(self._run_and_store(agent, inputs, agent_outputs, completed))
+                # Add planning context for this specific agent
+                agent_name = agent.name if hasattr(agent, "name") else str(agent)
+                inputs["planning_context"] = plan.get("agent_inputs", {}).get(agent_name, {})
+                inputs["user_query"] = input_data.get("user_query", "")
+                
+                # Add task to run this agent
+                tasks.append(self._run_agent(agent, inputs, agent_outputs, completed_agents))
                 
             # Run agents concurrently
-            await asyncio.gather(*tasks)
+            if tasks:
+                await asyncio.gather(*tasks)
             
-            # Update execution state
-            available_agents = self._get_ready_agents(completed)
-            pending_agents = all_agents - available_agents - completed
-            
-            execution_state["available_agents"] = [a.name if hasattr(a, "name") else str(a) for a in available_agents]
-            execution_state["pending_agents"] = [a.name if hasattr(a, "name") else str(a) for a in pending_agents]
-            execution_state["completed_agents"] = [a.name if hasattr(a, "name") else str(a) for a in completed]
-            execution_state["current_plan"] = plan
+            # Ask planning agent for next steps
+            if self.planning_agent in completed_agents:
+                planning_inputs = {
+                    "user_input": input_data,
+                    "previous_outputs": {k.name if hasattr(k, "name") else str(k): v for k, v in agent_outputs.items()},
+                    "iteration": iteration
+                }
+                
+                plan_text = await self.planning_agent.run(inputs=planning_inputs)
+                plan = self._parse_agent_output(plan_text)
+                agent_outputs[self.planning_agent] = plan
+            else:
+                print("Warning: Planning agent not in completed agents list")
+                break
         
-        # Run output agent if not already completed
-        if self.graph.output_agent not in completed:
-            inputs = {
-                dep.name: agent_outputs[dep]
-                for dep in self.graph.reverse_edges[self.graph.output_agent]
-                if dep in agent_outputs
-            }
-            # Add final plan
-            inputs["final_plan"] = plan
+        # If output agent hasn't run yet, run it with all available outputs
+        if self.graph.output_agent not in completed_agents:
+            output_agent = self.graph.output_agent
+            print(f"Running output agent: {output_agent.name if hasattr(output_agent, 'name') else str(output_agent)}")
             
-            output = await self.graph.output_agent.run(inputs=inputs)
-            agent_outputs[self.graph.output_agent] = output
+            # Prepare inputs - include outputs from all completed agents
+            inputs = {
+                agent_name: agent_outputs[agent_obj]
+                for agent_name, agent_obj in self.agent_map.items()
+                if agent_obj in completed_agents
+            }
+            
+            # Also include the final plan and user query
+            inputs["final_plan"] = plan
+            inputs["user_query"] = input_data.get("user_query", "")
+            
+            output_text = await output_agent.run(inputs=inputs)
+            parsed_output = self._parse_agent_output(output_text)
+            agent_outputs[output_agent] = parsed_output
             
         return agent_outputs.get(self.graph.output_agent, {})
 
-    async def _run_and_store(self, agent: BaseAgent, inputs: Dict[str, Any], 
-                            agent_outputs: Dict, completed: Set) -> None:
+    async def _run_agent(self, agent: BaseAgent, inputs: Dict[str, Any], 
+                        agent_outputs: Dict, completed_agents: Set) -> None:
         """Run an agent with given inputs and store its output."""
+        agent_name = agent.name if hasattr(agent, "name") else str(agent)
+        print(f"Running agent: {agent_name}")
+        
         try:
-            output = await agent.run(inputs=inputs)
-            agent_outputs[agent] = output
-            completed.add(agent)
+            output_text = await agent.run(inputs=inputs)
+            parsed_output = self._parse_agent_output(output_text)
+            agent_outputs[agent] = parsed_output
+            completed_agents.add(agent)
+            print(f"Agent completed: {agent_name}")
+            
         except Exception as e:
-            # You may want to customize error handling behavior
-            raise RuntimeError(f"Agent {agent.name if hasattr(agent, 'name') else agent} failed: {str(e)}") from e
-
-    def _get_ready_agents(self, completed: Set) -> Set:
-        """Get all agents that are ready to run (all dependencies completed)."""
-        ready = set()
-        for agent, deps in self.graph.reverse_edges.items():
-            if agent not in completed and all(dep in completed for dep in deps):
-                ready.add(agent)
-        return ready
+            print(f"Error running agent {agent_name}: {str(e)}")
+            # Don't throw error, just log it and continue
+            agent_outputs[agent] = {"error": str(e)}
+    
+    def _parse_agent_output(self, output_text):
+        """Parse agent output using the intermediate parser."""
+        if isinstance(output_text, str):
+            try:
+                return self.im_parser.parse_values(output_text)
+            except Exception as e:
+                print(f"Warning: Failed to parse agent output: {str(e)}")
+                return {"raw_output": output_text}
+        else:
+            # If it's already a dictionary, use it directly
+            return output_text
+    
+    def _build_agent_map(self):
+        """Build a map of agent names to agent objects for easy lookup."""
+        # Collect all agents in the graph
+        all_agents = set(self.graph.edges.keys())
+        for downstreams in self.graph.edges.values():
+            all_agents.update(downstreams)
+            
+        # Map agent names to agent objects
+        self.agent_map = {}
+        for agent in all_agents:
+            name = agent.name
+            self.agent_map[name] = agent
+            
+        print(f"Agent map built: {list(self.agent_map.keys())} Full map: {self.agent_map}")

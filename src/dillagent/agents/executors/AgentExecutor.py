@@ -1,13 +1,13 @@
-from dillagent.agents.executors import BaseAgentExecutor
+from ...agents.executors.BaseAgentExecutor import BaseAgentExecutor
 from ..agents.BaseAgent import BaseAgent
-from ...dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
+from ...dependencies.parsers.intermediate.BaseIntermediateParser import BaseIntermediateParser
 
 
 class AgentExecutor(BaseAgentExecutor):
     def __init__(self, agent):
         self.agent = agent
         # Eventually get parser keywords from PromptTemplate
-        self.im_parser = IntermediateParser(['Action', 'Action Input'])
+        self.im_parser = BaseIntermediateParser(['Action', 'Action Input'])
 
     def run(self, prompt):
         # print("\n\n\n", self.agent.llm.messages)

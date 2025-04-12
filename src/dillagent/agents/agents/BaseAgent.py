@@ -1,12 +1,12 @@
-from ...dependencies.prompts.SysPrompt import SysPrompt
+from ...dependencies.prompts.BaseSysPrompt import BaseSysPrompt
 from ...dependencies.prompts.StructuredPrompt import StructuredPrompt
+from ...dependencies.parsers.intermediate.BaseIntermediateParser import BaseIntermediateParser
 from typing import List, Optional
 from ...llm.LLM import LLM
 from abc import ABC, abstractmethod
 
-
 class BaseAgent(ABC):
-    def __init__(self, llm: LLM, tools: List, sys_prompt: SysPrompt = None, name: str = "Generic Agent"):
+    def __init__(self, llm: LLM, tools: List, sys_prompt: BaseSysPrompt = None, name: str = "Generic Agent", intermediate_parser: BaseIntermediateParser = None ):
         """
         Initialize the BaseAgent with a list of tools and an optional initial prompt.
 
@@ -23,6 +23,7 @@ class BaseAgent(ABC):
         self.sys_prompt.generate_prompt(tools)
         self.llm.add_sys_prompt(self.sys_prompt.prompt_str)
         self.name = name
+        self.intermediate_parser = intermediate_parser
 
     @abstractmethod
     async def run(self, *, prompt: Optional[str] = None, inputs: Optional[dict] = None) -> dict:

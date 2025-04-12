@@ -1,9 +1,9 @@
 from typing import List
-from .SysPrompt import SysPrompt
+from .BaseSysPrompt import BaseSysPrompt
 from ...tools.Tool import Tool
 
 
-class MultiInputSysPrompt(SysPrompt):
+class MultiInputSysPrompt(BaseSysPrompt):
     def __init__(self, header):
         self.header = header
         self.prompt_str = None

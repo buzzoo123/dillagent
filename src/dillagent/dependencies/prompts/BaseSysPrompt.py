@@ -3,7 +3,7 @@ from ...tools.Tool import Tool
 from typing import List
 
 
-class SysPrompt(ABC):
+class BaseSysPrompt(ABC):
     def __init__(self):
         pass
 

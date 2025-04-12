@@ -113,7 +113,7 @@ agent = StarterAgent(
 print(agent.sys_prompt.prompt_str)
 
 runner = ConversationalExecutor(agent, JsonParser(
-    ['action', 'action_input'], 'action', 'action_input'))
+    ['action', 'action_input']))
 
 prompt = input(colored("What can I help you with?\n", "green"))
 while (True):

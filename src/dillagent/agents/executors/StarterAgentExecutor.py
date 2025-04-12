@@ -1,9 +1,9 @@
 from .BaseAgentExecutor import BaseAgentExecutor
-from ...dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
+from ...dependencies.parsers.intermediate.BaseIntermediateParser import BaseIntermediateParser
 
 
 class StarterAgentExecutor(BaseAgentExecutor):
-    def __init__(self, agent, intermediate_parser: IntermediateParser):
+    def __init__(self, agent, intermediate_parser: BaseIntermediateParser):
         """
         Initializes a ConversationalExecutor instance.
 

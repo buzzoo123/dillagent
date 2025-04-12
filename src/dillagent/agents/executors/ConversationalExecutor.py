@@ -1,15 +1,15 @@
 from .BaseAgentExecutor import BaseAgentExecutor
-from ...dependencies.parsers.intermediate.IntermediateParser import IntermediateParser
+from ...dependencies.parsers.intermediate.BaseIntermediateParser import BaseIntermediateParser
 
 
 class ConversationalExecutor(BaseAgentExecutor):
-    def __init__(self, agent, intermediate_parser: IntermediateParser):
+    def __init__(self, agent, intermediate_parser: BaseIntermediateParser):
         """
         Initializes a ConversationalExecutor instance.
 
         Parameters:
         - agent (BaseAgent): The agent to be used in the loop.
-        - intermediate_parser (IntermediateParser): The parser for intermediate responses.
+        - intermediate_parser (BaseIntermediateParser): The parser for intermediate responses.
         """
         super().__init__(agent, intermediate_parser)
 
