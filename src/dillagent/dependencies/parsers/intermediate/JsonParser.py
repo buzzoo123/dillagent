@@ -1,41 +1,28 @@
 import json
-
 from .BaseIntermediateParser import BaseIntermediateParser
 
-
 class JsonParser(BaseIntermediateParser):
-    def __init__(self, keys):
-        super().__init__(keys)
+    def __init__(self, state_keys=None):
+        super().__init__(state_keys)
 
-    def parse_values(self, text):
-        # Find the start and end positions of the JSON blob
+    def parse_values(self, text: str) -> dict:
+        # Attempt to extract JSON from within potentially noisy LLM output
         start_pos = text.find('{')
         end_pos = text.rfind('}') + 1
         if start_pos == -1 or end_pos == -1:
-            raise KeyError("JSON blob not found in the provided text.")
+            raise KeyError("No JSON object found in LLM output.")
 
-        # Extract the JSON blob from the text
         json_blob = text[start_pos:end_pos]
-        print(json_blob)
-        # Parse the JSON blob
+
         try:
-            data = json.loads(json_blob)
+            parsed = json.loads(json_blob)
         except json.JSONDecodeError:
-            raise ValueError("Failed to parse JSON blob.")
+            raise ValueError("Failed to parse JSON from LLM output.")
 
-        # Extract values based on keys
-        values = {}
-        for key in self.action_keys:
-            if key in data:
-                value = data[key]
-                if isinstance(value, dict):
-                    # Convert dictionaries to lists
-                    values[key] = value
-                elif isinstance(value, list):
-                    values[key] = value
-                else:
-                    # Case 1 & 3: action_input has no key name or a singular key name inside
-                    values[key] = value
-        print(values)
+        # Filter by expected keys
+        result = {}
+        for key in self.state_keys:
+            if key in parsed:
+                result[key] = parsed[key]
 
-        return values
+        return result

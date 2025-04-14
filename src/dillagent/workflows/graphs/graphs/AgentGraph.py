@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from .BaseAgentGraph import BaseAgentGraph
-from ...agents.agents.BaseAgent import BaseAgent
+from ....agents.agents.BaseAgent import BaseAgent
 
 class AgentGraph(BaseAgentGraph):
     def __init__(self):

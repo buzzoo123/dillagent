@@ -3,7 +3,7 @@ from .BaseSysPrompt import BaseSysPrompt
 from ...tools.Tool import Tool
 
 
-class MultiInputSysPrompt(BaseSysPrompt):
+class MultiInputToolsSysPrompt(BaseSysPrompt):
     def __init__(self, header):
         self.header = header
         self.prompt_str = None

@@ -10,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from googlesearch import search as google_search
 from dotenv import load_dotenv
-from src.dillagent.dependencies.prompts import MultiInputSysPrompt
+from src.dillagent.dependencies.prompts import MultiInputToolsSysPrompt
 from src.dillagent.dependencies.parsers.intermediate import JsonParser
 from termcolor import colored
 
@@ -105,7 +105,7 @@ def make_sat(question: str):
 llm = OpenAILLM(LLMConfig(
     model="gpt-4o-2024-08-06", api_key=os.environ.get('API_KEY'), path="https://api.openai.com/v1/"),)
 
-sys_prompt = MultiInputSysPrompt("You are a helpful AI Assistant.")
+sys_prompt = MultiInputToolsSysPrompt("You are a helpful AI Assistant.")
 
 agent = StarterAgent(
     llm, [search, make_music, generate_quote, make_map, make_sat], sys_prompt)

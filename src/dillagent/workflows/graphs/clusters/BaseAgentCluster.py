@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from .BaseAgentGraph import BaseAgentGraph
-from ...agents.agents.BaseAgent import BaseAgent
+from ..graphs.BaseAgentGraph import BaseAgentGraph
+from ....agents.agents.BaseAgent import BaseAgent
 
 class BaseAgentCluster(ABC):
     def __init__(self, graph: BaseAgentGraph, input_agent: BaseAgent, output_agent: BaseAgent):

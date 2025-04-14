@@ -1,10 +1,12 @@
 [tool.poetry]
 name = "dillagent"
-version = "1.0.5"
+version = "1.0.7"
 description = "Agentic LLM library"
-authors = ["buzzoo123"]
+authors = ["Dillan Khurana <buzzoo123@users.noreply.github.com>"]
 license = "LICENSE"
 readme = "README.md"
+homepage = "https://github.com/buzzoo123/dillagent"
+repository = "https://github.com/buzzoo123/dillagent"
 
 [tool.poetry.dependencies]
 python = "^3.11"

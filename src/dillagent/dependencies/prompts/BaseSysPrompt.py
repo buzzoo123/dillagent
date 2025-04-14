@@ -7,5 +7,5 @@ class BaseSysPrompt(ABC):
     def __init__(self):
         pass
 
-    def generate_prompt(self, tools: List[Tool]):
+    def generate_prompt(self):
         pass

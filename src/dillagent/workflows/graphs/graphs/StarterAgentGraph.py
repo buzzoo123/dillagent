@@ -1,5 +1,5 @@
 from .BaseAgentGraph import BaseAgentGraph
-from ...agents.agents.BaseAgent import BaseAgent
+from ....agents.agents.BaseAgent import BaseAgent
 
 class StarterAgentGraph(BaseAgentGraph):
     def __init__(self):

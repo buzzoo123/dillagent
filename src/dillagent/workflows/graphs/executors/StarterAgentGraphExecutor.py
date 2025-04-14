@@ -1,7 +1,7 @@
 import asyncio
 from typing import Dict, Set, Any
-from ...agents.agents import BaseAgent
-from ..graphs.BaseAgentGraphExecutor import BaseAgentGraphExecutor
+from ....agents.agents import BaseAgent
+from .BaseAgentGraphExecutor import BaseAgentGraphExecutor
 from ..graphs.StarterAgentGraph import StarterAgentGraph
 
 class StarterAgentGraphExecutor(BaseAgentGraphExecutor):

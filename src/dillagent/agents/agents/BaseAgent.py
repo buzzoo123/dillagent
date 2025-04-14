@@ -1,12 +1,11 @@
 from ...dependencies.prompts.BaseSysPrompt import BaseSysPrompt
-from ...dependencies.prompts.StructuredPrompt import StructuredPrompt
 from ...dependencies.parsers.intermediate.BaseIntermediateParser import BaseIntermediateParser
 from typing import List, Optional
 from ...llm.LLM import LLM
 from abc import ABC, abstractmethod
 
 class BaseAgent(ABC):
-    def __init__(self, llm: LLM, tools: List, sys_prompt: BaseSysPrompt = None, name: str = "Generic Agent", intermediate_parser: BaseIntermediateParser = None ):
+    def __init__(self, llm: LLM, tools: List, intermediate_parser: BaseIntermediateParser, sys_prompt: BaseSysPrompt = None, name: str = "Generic Agent"):
         """
         Initialize the BaseAgent with a list of tools and an optional initial prompt.
 
@@ -28,9 +27,8 @@ class BaseAgent(ABC):
     @abstractmethod
     async def run(self, *, prompt: Optional[str] = None, inputs: Optional[dict] = None) -> dict:
         """
-        Runs the agent. You may call this:
-            await agent.run(prompt="What's the weather?")
-        or
-            await agent.run(inputs={"query": "Weather in Tokyo", "user_id": 123})
+        Runs the agent using the underlying LLM. You may call this:
+
+            return values parsed via an intermediate parser as a dict for best use in ecosystem 
         """
         pass
