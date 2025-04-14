@@ -15,16 +15,21 @@ class PlannerAgentGraphExecutor(BaseAgentGraphExecutor):
             raise ValueError("Planner must be part of the graph.")
         
     def _prepare_planner_input_for_next_iteration(self, state, original_query):
-        # Create a human-readable text representation of the current state
-        state_text = f"Original query: {original_query}\n\nCurrent state:\n"
-        
-        for executor, output in state.items():
-            agent_name = executor.agent.name if hasattr(executor, 'agent') else "Unknown Agent"
-            state_text += f"{agent_name}: {json.dumps(output, indent=2)}\n\n"
-                
-        # Return a simple dictionary with just a text string
+        # Flatten executor state to agent-name: output mapping
+        flattened_state = {
+            executor.agent.name: output
+            for executor, output in state.items()
+        }
+
+        # Merge into single JSON-like dict
+        planner_input_dict = {
+            "original_query": original_query,
+            **flattened_state
+        }
+
+        # Return as properly formatted input
         return {
-            "PlannerAgent_input": state_text
+            "PlannerAgent_input": json.dumps(planner_input_dict, indent=2)
         }
 
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -48,15 +53,12 @@ class PlannerAgentGraphExecutor(BaseAgentGraphExecutor):
             )
 
         # Final step: run output executors if terminated
+        print("successfully terminated")
         final_outputs = {}
         for executor in self.graph.get_output_executors():
             input_key = f"{executor.agent.name}_input"
-            inputs = {
-                input_key: {
-                    ex.agent.name: self.state.get(ex, {})
-                    for ex in self.state
-                }
-            }
+            inputs = self.state[self.planner_executor]
+            print(f'final inputs {inputs}')
             _, result = await self._run_executor(executor, inputs)
             self.state[executor] = result
             final_outputs[executor.agent.name] = result
@@ -64,7 +66,7 @@ class PlannerAgentGraphExecutor(BaseAgentGraphExecutor):
         return final_outputs
 
     async def _run_one_full_pass(self, planner_input: Dict[str, Any]) -> bool:
-        execution_layers = self.graph.get_execution_layers(include_output_executors=False)
+        execution_layers = self.graph.get_execution_layers(include_output_executors=True)
         print(f"Execution Layers: {execution_layers}")
 
         for layer in execution_layers:

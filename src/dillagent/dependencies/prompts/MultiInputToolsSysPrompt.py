@@ -22,7 +22,7 @@ class MultiInputToolsSysPrompt(BaseSysPrompt):
                 "Must provide at least 1 valid tool for this type of prompt")
         prompt = f'''{self.header}
         
-Respond to the human as helpfully and accurately as possible. You have access to the following tools:
+You have access to the following tools:
         
 '''
         for tool in tools:
@@ -30,7 +30,7 @@ Respond to the human as helpfully and accurately as possible. You have access to
 
         prompt += f'''Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
 
-Valid "action" values: "Respond to Human" or {self.get_tool_names(tools)}
+Valid "action" values: {self.get_tool_names(tools)}
 
 Provide only ONE action per $JSON_BLOB, as shown:
 
@@ -61,9 +61,7 @@ Action:
 
 Begin! ALWAYS respond with a valid json blob of a single action.
 
-Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation
-
-If addressing the user you MUST use the 'Respond to Human' action.'''
+Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation'''
 
         self.prompt_str = prompt
         return prompt

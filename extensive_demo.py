@@ -34,7 +34,7 @@ class WeatherSchema(DescribedModel):
     location: str = Field(..., description="The location to get weather for (city name or coordinates).")
 
 class SummarySchema(DescribedModel):
-    content: str = Field(..., description="Content to be summarized or formatted for the final response.")
+    content: str = Field(..., description="Content to be output for the final response.")
 
 # Define tools
 @tool(name="Search", description="Search the internet for information on a topic.", schema=SearchSchema)
@@ -66,11 +66,11 @@ def get_weather(location: str):
     }
     return json.dumps(mock_weather)
 
-@tool(name="Summarize", description="Format and summarize information for the final response.", schema=SummarySchema)
-def summarize(content: str):
+@tool(name="Respond To User", description="Respond to the user with a final output string", schema=SummarySchema)
+def respond_to_user(content: str):
     """Tool for the output agent to organize its thinking."""
     # This tool doesn't do anything external
-    return f"Processed output: {content[:100]}..."
+    print(content)
 
 async def main():
     # Setup parsers for JSON output from LLMs
@@ -95,7 +95,8 @@ async def main():
     # Create planner prompt (using MultiAgentSupervisorSysPrompt)
     planner_prompt = MultiAgentSupervisorSysPrompt(
         "You are a Planning Agent. Your job is to determine which specialized agents to use given a user's initial query or the subsequent state of the agents you control. "
-        "The available agents are: WeatherAgent (takes a string location as input for weather-related queries) and SearchAgent (takes a string to search the web as input for general information queries). "
+        "The available agents are: WeatherAgent (takes a string location as input for weather-related queries), SearchAgent (takes a string to search the web as input for general information queries),"
+        "OutputAgent (takes a string of all relevant data needed to answer the initial query). Only use the OutputAgent when you are ready to give a final answer."
         "For each query, select which agent(s) should process it by returning their names in the 'next_executors' list, "
         "and provide specific instructions for each selected agent. "
         "If the query is complete, set 'terminate' to true.\n\n"
@@ -122,7 +123,7 @@ async def main():
     planner_agent = StarterAgent(planner_llm, [], parser, planner_prompt, name="PlannerAgent")
     weather_agent = StarterAgent(weather_llm, [get_weather], parser, weather_prompt, name="WeatherAgent")
     search_agent = StarterAgent(search_llm, [search], parser, search_prompt, name="SearchAgent")
-    output_agent = StarterAgent(output_llm, [summarize], parser, output_prompt, name="OutputAgent")
+    output_agent = StarterAgent(output_llm, [respond_to_user], parser, output_prompt, name="OutputAgent")
     
     # Create agent executors
     planner_executor = BaseAgentExecutor(planner_agent)
