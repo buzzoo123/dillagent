@@ -4,11 +4,11 @@ import anthropic
 
 
 class AnthropicLLM(LLM):
-    def __init__(self, config: LLMConfig, messages=[]):
+    def __init__(self, config: LLMConfig, messages=None):
         super().__init__(config, messages)
         self.sys_prompt = None
 
-    def run(self, prompt):
+    async def run(self, prompt):
         if self.config.type == 'API':
             response = self._call_api(prompt)
             return response

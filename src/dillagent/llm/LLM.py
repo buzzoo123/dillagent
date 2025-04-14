@@ -3,7 +3,9 @@ from abc import ABC, abstractmethod
 
 
 class LLM(ABC):
-    def __init__(self, config: LLMConfig, messages=[]):
+    def __init__(self, config: LLMConfig, messages=None):
+        if not messages:
+            self.messages = []
         self.config = config
         self.messages = messages
 

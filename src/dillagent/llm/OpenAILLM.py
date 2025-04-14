@@ -1,25 +1,27 @@
 from .LLMConfig import LLMConfig
 from .LLM import LLM
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 
 class OpenAILLM(LLM):
-    def __init__(self, config: LLMConfig, messages=[]):
+    def __init__(self, config: LLMConfig, messages=None):
+        if messages is None:
+            messages = []
         super().__init__(config, messages)
 
-    def run(self, prompt):
+    async def run(self, prompt):
         if self.config.type == 'API':
-            response = self._call_api(prompt)
+            response = await self._call_api(prompt)
             return response
-
         else:
             raise ValueError(
-                "OpenAILLM only works with type: 'API'. Consider using CustomLLM class for other use cases.")
+                "OpenAILLM only works with type: 'API'. Consider using CustomLLM class for other use cases."
+            )
 
-    def _call_api(self, prompt):
+    async def _call_api(self, prompt):
         self.add_messages([{"role": "user", "content": prompt}])
-        client = OpenAI(base_url=self.config.path, api_key=self.config.api_key)
-        completion = client.chat.completions.create(
+        client = AsyncOpenAI(base_url=self.config.path, api_key=self.config.api_key)
+        completion = await client.chat.completions.create(
             model=self.config.model,
             messages=self.messages
         )
@@ -29,6 +31,7 @@ class OpenAILLM(LLM):
         self.messages.extend(messages)
 
     def add_sys_prompt(self, sys_prompt):
-        self.messages.extend([
-            {"role": "system", "content": sys_prompt},
-        ])
+        self.messages.append({"role": "system", "content": sys_prompt})
+
+    def clear_messages(self):
+        self.messages = []

@@ -1,152 +1,169 @@
 import asyncio
-import random
-from typing import List
-from bs4 import BeautifulSoup
+import os
+import json
+from typing import List, Dict, Any
 from dotenv import load_dotenv
 from pydantic import Field
-import requests
-from src.dillagent.dependencies.prompts import MultiAgentSupervisorSysPrompt
-from src.dillagent.tools.Tool import tool
-from src.dillagent.models.DescribedModel import DescribedModel
-from src.dillagent.agents.agents import StarterAgent
-from src.dillagent.llm import OpenAILLM, LLMConfig
-from src.dillagent.dependencies.prompts import MultiInputToolsSysPrompt
-from src.dillagent.dependencies.parsers.intermediate import JsonParser
-from src.dillagent.workflows.graphs.graphs import BaseAgentGraph
-from src.dillagent.workflows.graphs.executors import BaseAgentGraphExecutor
-from googlesearch import search as google_search
-import os
 
+from src.dillagent.models import DescribedModel
+from src.dillagent.tools import tool
+from src.dillagent.llm import OpenAILLM, LLMConfig
+from src.dillagent.agents.agents import StarterAgent
+from src.dillagent.agents.executors import BaseAgentExecutor
+from src.dillagent.dependencies.parsers.intermediate import JsonParser
+from src.dillagent.dependencies.prompts.MultiAgentSupervisorSysPrompt import MultiAgentSupervisorSysPrompt
+from src.dillagent.dependencies.prompts.MultiInputToolsSysPrompt import MultiInputToolsSysPrompt
+from src.dillagent.workflows.graphs.graphs import BaseAgentGraph
+from src.dillagent.workflows.graphs.executors import PlannerAgentGraphExecutor
+
+# Load environment variables
 load_dotenv()
 
-# Setup
-llm = OpenAILLM(LLMConfig(
+# Setup OpenAI API
+llm_config = LLMConfig(
     model="gpt-4o-2024-08-06",
-    api_key=os.environ['OPENAI_API_KEY'],
+    api_key=os.environ.get('OPENAI_API_KEY'),
     path="https://api.openai.com/v1/"
-))
+)
 
+# Define schemas for our tools
 class SearchSchema(DescribedModel):
-    query: str = Field(...,
-                       description="Query to be searched in the form of a string.")
+    query: str = Field(..., description="The search query in the form of a string.")
 
+class WeatherSchema(DescribedModel):
+    location: str = Field(..., description="The location to get weather for (city name or coordinates).")
 
-class QuoteModel(DescribedModel):
-    topic: str = Field(...,
-                       description="Topic of motivational quote in the form of a string")
+class SummarySchema(DescribedModel):
+    content: str = Field(..., description="Content to be summarized or formatted for the final response.")
 
-
-class VibeSchema(DescribedModel):
-    vibe: str = Field(...,
-                      description="The vibe of the music being made in the form of a String")
-    length: str = Field(...,
-                        description="The length of the song in seconds represented as an int")
-
-
-class Route(DescribedModel):
-    length: int = Field(...,
-                        description="An int representing the route length")
-    name: str = Field(..., description="The name of the route as a string")
-
-
-class Map(DescribedModel):
-    routes: List[Route] = Field(..., description="A list of route objects")
-
-
-class Question(DescribedModel):
-    question: str = Field(...,
-                          description="An example SAT question in the form of a String")
-
-
-@tool(name="Search", description="Useful for searching for information", schema=SearchSchema)
+# Define tools
+@tool(name="Search", description="Search the internet for information on a topic.", schema=SearchSchema)
 def search(query: str):
-    res = ""
-    search_results = list(google_search(query, num_results=1))
-    if search_results:
-        # Fetch the content of the first search result page
-        page_url = search_results[0]
-        response = requests.get(page_url)
-        if response.status_code == 200:
-            # Parse the HTML content using BeautifulSoup
-            soup = BeautifulSoup(response.content, 'html.parser')
-            # Extract text from the HTML content
-            for data in soup.find_all("p"):
-                res += "\n" + data.get_text()
-            # Return the plain text
-            return res
+    """Simulated internet search."""
+    try:
+        # For demo purposes, we'll use a simple simulation
+        if "weather" in query.lower():
+            return "Weather information should be obtained using the Weather tool."
+        elif "news" in query.lower():
+            return "Latest news: Technology advancements in AI continue to accelerate."
+        elif "recipe" in query.lower():
+            return "Found several recipes that match your query. Top result: Classic pasta carbonara with eggs, cheese, and bacon."
         else:
-            return "Failed to retrieve page content"
-    else:
-        return "No search results found"
+            return f"Search results for '{query}': Found information related to your query. This is simulated search data."
+    except Exception as e:
+        return f"Error performing search: {str(e)}"
 
+@tool(name="Weather", description="Get current weather information for a location.", schema=WeatherSchema)
+def get_weather(location: str):
+    """Simulated weather API call."""
+    # For demo purposes, we'll return mock data
+    mock_weather = {
+        "location": location,
+        "temperature": 72,
+        "condition": "Partly Cloudy",
+        "humidity": 65,
+        "wind_speed": 8
+    }
+    return json.dumps(mock_weather)
 
-@tool(name="Quote Generator", description="Useful for generating motivational quotes", schema=QuoteModel)
-def generate_quote(topic: str):
-    arr = [
-        "You will one day be as financially stable as Eric!",
-        "You will one day be as smart as Kieran the great!",
-        "One day, you will be a star!",
-    ]
-    random_element = random.choice(arr)
-    return random_element
+@tool(name="Summarize", description="Format and summarize information for the final response.", schema=SummarySchema)
+def summarize(content: str):
+    """Tool for the output agent to organize its thinking."""
+    # This tool doesn't do anything external
+    return f"Processed output: {content[:100]}..."
 
-
-@tool(name="Make Music", description="Useful for making music", schema=VibeSchema)
-def make_music(vibe: str, length: str):
-    with open(vibe + '.txt', 'w') as file:
-        file.write(vibe)
-        file.write("Length: " + str(length))
-    return "music file generated called example.txt"
-
-
-@tool(name="Make Map", description="Useful for making maps", schema=Map)
-def make_map(routes: List[Route]):
-    print(routes)
-    return "Map generated in file called map.txt"
-
-
-@tool(name="Make Pracitce SAT Question", description="Useful for making practice SAT questions and outputting them in PDF format", schema=Question)
-def make_sat(question: str):
-    print(question)
-    return "PDF Generated as sat.txt"
-
-planner_sys_prompt = MultiAgentSupervisorSysPrompt("TO_DO - NEEDS TO SPECIFY WHAT AGENTS ARE AVAILABLE AS CHILDREN AND RETURN FORMAT TO EXECUTE")
-
-#USE MULTIINPUTSYSPROMPTS FOR ALL AGENTS THAT REQUIRE TOOLS + APPROPRAITE PARSERS
-
-#MAKE AGENTS
-
-#MAKE GRAPH
-
-#MAKE GRAPH EXECUTOR
-
-parser = JsonParser(['action', 'action_input'])
-
-# Agents
-input_agent = StarterAgent(llm, [generate_quote], sys_prompt, parser, name="InputAgent")
-music_agent = StarterAgent(llm, [make_music], sys_prompt, parser, name="MusicAgent")
-quote_agent = StarterAgent(llm, [generate_quote], sys_prompt, parser, name="QuoteAgent")
-summary_agent = StarterAgent(llm, [], sys_prompt, parser, name="SummaryAgent")
-
-# Graph
-graph = BaseAgentGraph()
-graph.add_edge(input_agent, music_agent)
-graph.add_edge(input_agent, quote_agent)
-graph.add_edge(music_agent, summary_agent)
-graph.add_edge(quote_agent, summary_agent)
-
-# Executor
-class SingleRunExecutor(BaseAgentGraphExecutor):
-    async def run(self, input_data):
-        return await self.run_iteration(input_data)
-
-executor = SingleRunExecutor(graph)
-
-# Run
 async def main():
-    user_prompt = input("What vibe of music and inspiration are you looking for?\n")
-    input_data = {"InputAgent_input": user_prompt}
+    # Setup parsers for JSON output from LLMs
+    parser = JsonParser(['action', 'action_input'])
+    
+    # Create prompt templates for agents with tools
+    weather_prompt = MultiInputToolsSysPrompt(
+        "You are a Weather Agent. Your job is to get accurate weather information for a location. "
+        "Always extract the location from the query before using your tool."
+    )
+    
+    search_prompt = MultiInputToolsSysPrompt(
+        "You are a Search Agent. Your job is to search for information on the internet. "
+        "Format search queries to be clear and concise."
+    )
+    
+    output_prompt = MultiInputToolsSysPrompt(
+        "You are an Output Agent. Your job is to take information from the Weather Agent and/or Search Agent "
+        "and present it in a helpful, well-formatted way to the user. Always include all relevant information."
+    )
+    
+    # Create planner prompt (using MultiAgentSupervisorSysPrompt)
+    planner_prompt = MultiAgentSupervisorSysPrompt(
+        "You are a Planning Agent. Your job is to determine which specialized agents to use given a user's initial query or the subsequent state of the agents you control. "
+        "The available agents are: WeatherAgent (takes a string location as input for weather-related queries) and SearchAgent (takes a string to search the web as input for general information queries). "
+        "For each query, select which agent(s) should process it by returning their names in the 'next_executors' list, "
+        "and provide specific instructions for each selected agent. "
+        "If the query is complete, set 'terminate' to true.\n\n"
+        "You must respond in the following format exactly:\n"
+        "{\n"
+        "  \"next_executors\": [\"WeatherAgent\", \"SearchAgent\"],\n"
+        "  \"WeatherAgent_input\": \"What's the weather in New York?\",\n"
+        "  \"SearchAgent_input\": \"Latest news about technology\",\n"
+        "  \"terminate\": false\n"
+        "}\n\n"
+        "Only return the agents needed for the specific query. Make sure to include appropriate input "
+        "fields for each agent (e.g., 'WeatherAgent_input' for WeatherAgent). "
+        "If all required information has been gathered, set 'terminate' to true."
+        "Ensure you adhere to the output format. Begin!"
+)
+    
+    # Create LLM instances for each agent
+    planner_llm = OpenAILLM(llm_config)
+    weather_llm = OpenAILLM(llm_config)
+    search_llm = OpenAILLM(llm_config)
+    output_llm = OpenAILLM(llm_config)
+    
+    # Create agents
+    planner_agent = StarterAgent(planner_llm, [], parser, planner_prompt, name="PlannerAgent")
+    weather_agent = StarterAgent(weather_llm, [get_weather], parser, weather_prompt, name="WeatherAgent")
+    search_agent = StarterAgent(search_llm, [search], parser, search_prompt, name="SearchAgent")
+    output_agent = StarterAgent(output_llm, [summarize], parser, output_prompt, name="OutputAgent")
+    
+    # Create agent executors
+    planner_executor = BaseAgentExecutor(planner_agent)
+    weather_executor = BaseAgentExecutor(weather_agent, tool_indicator_key="action_input", tool_output_key="tool_result")
+    search_executor = BaseAgentExecutor(search_agent, tool_indicator_key="action_input", tool_output_key="tool_result")
+    output_executor = BaseAgentExecutor(output_agent, tool_indicator_key="action_input", tool_output_key="tool_result")
+    
+    # Create the agent graph
+    graph = BaseAgentGraph()
+    
+    # Add executors to graph
+    graph.add_executor(planner_executor)
+    graph.add_executor(weather_executor)
+    graph.add_executor(search_executor)
+    graph.add_executor(output_executor)
+    
+    # Define connections
+    graph.add_edge(planner_executor, weather_executor)
+    graph.add_edge(planner_executor, search_executor)
+    graph.add_edge(weather_executor, output_executor)
+    graph.add_edge(search_executor, output_executor)
+    
+    # Register output executor
+    graph.register_output_executor(output_executor)
+    
+    # Create planner graph executor
+    executor = PlannerAgentGraphExecutor(graph, planner_executor)
+    
+    # Run the agent graph with a user query
+    user_query = input("What would you like to know about? ")
+    
+    # Format input for the planner
+    input_data = {"PlannerAgent_input":user_query}
+    
+    print("\nProcessing your query...\n")
+    
+    # Execute the graph
     result = await executor.run(input_data)
-    print("\nFinal Summary Output:\n", result)
+    
+    print("\n=== Final Response ===")
+    print(result)
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

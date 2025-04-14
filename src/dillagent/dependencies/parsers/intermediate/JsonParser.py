@@ -14,15 +14,20 @@ class JsonParser(BaseIntermediateParser):
 
         json_blob = text[start_pos:end_pos]
 
+        print(f"Json_Blob: {json_blob}")
+
         try:
             parsed = json.loads(json_blob)
         except json.JSONDecodeError:
             raise ValueError("Failed to parse JSON from LLM output.")
 
         # Filter by expected keys
-        result = {}
-        for key in self.state_keys:
-            if key in parsed:
-                result[key] = parsed[key]
+        # result = {}
+        # for key in self.state_keys:
+        #     if key in parsed:
+        #         result[key] = parsed[key]
 
+        result = parsed
+
+        print(f"result: {result}")
         return result

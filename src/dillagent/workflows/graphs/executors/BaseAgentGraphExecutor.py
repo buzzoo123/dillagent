@@ -38,6 +38,7 @@ class BaseAgentGraphExecutor(ABC):
 
     async def _run_executor(self, executor: BaseAgentExecutor, inputs: Dict[str, Any]):
         output = await executor.run(inputs)
+        
         return executor, output
 
     def _collect_upstream_outputs(self, executor: BaseAgentExecutor, input_data: Dict[str, Any]) -> Dict[str, Any]:

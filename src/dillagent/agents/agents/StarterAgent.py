@@ -18,7 +18,7 @@ class StarterAgent(BaseAgent):
         Returns:
         None
         """
-        super().__init__(llm, tools, sys_prompt, name, intermediate_parser)
+        super().__init__(llm, tools, intermediate_parser, sys_prompt, name)
 
     async def run(self, *, prompt: Optional[str] = None, inputs: Optional[dict] = None):
         """
@@ -35,11 +35,14 @@ class StarterAgent(BaseAgent):
         if inputs:
             # Convert inputs to a formatted string that the agent can understand
             formatted_prompt = inputs.get(f'{self.name}_input', '')
+            print(formatted_prompt)
             output = await self.llm.run(formatted_prompt)
+            print(output)
             return self.intermediate_parser.parse_values(output)
         
         # Otherwise, use the direct prompt
         elif prompt:
+            print(prompt)
             output = await self.llm.run(prompt)
             return self.intermediate_parser.parse_values(output)
         
@@ -48,7 +51,7 @@ class StarterAgent(BaseAgent):
             raise ValueError("Either prompt or inputs must be provided")
         
     async def use_tool(self, response, to_call, to_input):
-        for tool in self.agent.tools:
+        for tool in self.tools:
             if to_call == tool.name:
                 if isinstance(to_input, dict):
                     if asyncio.iscoroutinefunction(tool.func):
