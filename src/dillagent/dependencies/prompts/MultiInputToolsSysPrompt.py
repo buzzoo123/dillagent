@@ -55,8 +55,8 @@ Thought: I know what to respond
 Action:
 ```
 {{
-  "action": "Respond to Human",
-  "action_input": "Final response to human"
+  "action": "<action_name>",
+  "action_input": "<action_input>"
 }}
 
 Begin! ALWAYS respond with a valid json blob of a single action.

@@ -4,7 +4,6 @@ import json
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 from pydantic import Field
-
 from src.dillagent.models import DescribedModel
 from src.dillagent.tools import tool
 from src.dillagent.llm import OpenAILLM, LLMConfig
@@ -37,7 +36,7 @@ class SummarySchema(DescribedModel):
     content: str = Field(..., description="Content to be output for the final response.")
 
 # Define tools
-@tool(name="Search", description="Search the internet for information on a topic.", schema=SearchSchema)
+@tool(name="Search Tool", description="Search the internet for information on a topic.", schema=SearchSchema)
 def search(query: str):
     """Simulated internet search."""
     try:
