@@ -44,7 +44,7 @@ def search(query: str):
         if "weather" in query.lower():
             return "Weather information should be obtained using the Weather tool."
         elif "news" in query.lower():
-            return "Latest news: Technology advancements in AI continue to accelerate."
+            return "Latest news: AI is actually apporaching the singularity according to researchers."
         elif "recipe" in query.lower():
             return "Found several recipes that match your query. Top result: Classic pasta carbonara with eggs, cheese, and bacon."
         else:
@@ -52,7 +52,7 @@ def search(query: str):
     except Exception as e:
         return f"Error performing search: {str(e)}"
 
-@tool(name="Weather", description="Get current weather information for a location.", schema=WeatherSchema)
+@tool(name="Weather", description="Get current weather information for a single location.", schema=WeatherSchema)
 def get_weather(location: str):
     """Simulated weather API call."""
     # For demo purposes, we'll return mock data
@@ -89,13 +89,12 @@ async def main():
     output_prompt = MultiInputToolsSysPrompt(
         "You are an Output Agent. Your job is to take information from the Weather Agent and/or Search Agent "
         "and present it in a helpful, well-formatted way to the user. Always include all relevant information."
+        "You must adhere to the JSON response format detailed below."
     )
     
     # Create planner prompt (using MultiAgentSupervisorSysPrompt)
     planner_prompt = MultiAgentSupervisorSysPrompt(
-        "You are a Planning Agent. Your job is to determine which specialized agents to use given a user's initial query or the subsequent state of the agents you control. "
-        "The available agents are: WeatherAgent (takes a string location as input for weather-related queries), SearchAgent (takes a string to search the web as input for general information queries),"
-        "OutputAgent (takes a string of all relevant data needed to answer the initial query). Only use the OutputAgent when you are ready to give a final answer."
+        "You are a Planning Agent. Your job is to determine which specialized agents to use. You will be given the current state of execution and available agents to choose from next."
         "For each query, select which agent(s) should process it by returning their names in the 'next_executors' list, "
         "and provide specific instructions for each selected agent. "
         "If the query is complete, set 'terminate' to true.\n\n"
@@ -119,10 +118,10 @@ async def main():
     output_llm = OpenAILLM(llm_config)
     
     # Create agents
-    planner_agent = StarterAgent(planner_llm, [], parser, planner_prompt, name="PlannerAgent")
-    weather_agent = StarterAgent(weather_llm, [get_weather], parser, weather_prompt, name="WeatherAgent")
-    search_agent = StarterAgent(search_llm, [search], parser, search_prompt, name="SearchAgent")
-    output_agent = StarterAgent(output_llm, [respond_to_user], parser, output_prompt, name="OutputAgent")
+    planner_agent = StarterAgent(planner_llm, [], parser, planner_prompt, "", name="PlannerAgent")
+    weather_agent = StarterAgent(weather_llm, [get_weather], parser, weather_prompt, "Takes a weather related query in words", name="WeatherAgent")
+    search_agent = StarterAgent(search_llm, [search], parser, search_prompt, "Takes an internet search related query in words", name="SearchAgent")
+    output_agent = StarterAgent(output_llm, [respond_to_user], parser, output_prompt, "Takes a string of all relevant information needed for a final answer", name="OutputAgent")
     
     # Create agent executors
     planner_executor = BaseAgentExecutor(planner_agent)
@@ -134,36 +133,27 @@ async def main():
     graph = BaseAgentGraph()
     
     # Add executors to graph
-    graph.add_executor(planner_executor)
     graph.add_executor(weather_executor)
     graph.add_executor(search_executor)
     graph.add_executor(output_executor)
     
     # Define connections
-    graph.add_edge(planner_executor, weather_executor)
-    graph.add_edge(planner_executor, search_executor)
     graph.add_edge(weather_executor, output_executor)
     graph.add_edge(search_executor, output_executor)
     
-    # Register output executor
-    graph.register_output_executor(output_executor)
-    
-    # Create planner graph executor
-    executor = PlannerAgentGraphExecutor(graph, planner_executor)
+    # Create planner graph executor - set logging_enabled to true for detailed logs
+    executor = PlannerAgentGraphExecutor(graph, planner_executor, logging_enabled=True)
     
     # Run the agent graph with a user query
     user_query = input("What would you like to know about? ")
     
     # Format input for the planner
-    input_data = {"PlannerAgent_input":user_query}
+    input_data = {"PlannerAgent_input": user_query}
     
     print("\nProcessing your query...\n")
     
     # Execute the graph
-    result = await executor.run(input_data)
-    
-    print("\n=== Final Response ===")
-    print(result)
+    await executor.run(input_data)
 
 if __name__ == "__main__":
     asyncio.run(main())

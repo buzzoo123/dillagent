@@ -20,9 +20,7 @@ class BaseAgentExecutor:
         output = await self.agent.run(inputs=inputs)
 
         # Check if tool usage is requested -> NEED TO CHANGE TO BOOLEAN
-        #TODO CHANGE TO BOOLEAN
-        if self.tool_indicator_key and self.tool_indicator_key in output:
-            print(f"Using a tool!")
+        if self.tool_indicator_key and output.get(self.tool_indicator_key, False):
             tool_name = output.get(self.tool_name_key)
             tool_input = output.get(self.tool_input_key)
 
@@ -47,9 +45,6 @@ class BaseAgentExecutor:
                     **output
                 }
             else:
-                
                 return output
-        
-        
-            
+ 
         return output

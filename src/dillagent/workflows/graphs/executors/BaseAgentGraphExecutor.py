@@ -1,10 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Dict, Any, Set
 from ....agents.executors.BaseAgentExecutor import BaseAgentExecutor
 from ..graphs.BaseAgentGraph import BaseAgentGraph
+from ...BaseWorkflowExecutor import BaseWorkflowExecutor
 import asyncio
 
-class BaseAgentGraphExecutor(ABC):
+class BaseAgentGraphExecutor(BaseWorkflowExecutor):
     def __init__(self, graph: BaseAgentGraph):
         self.graph = graph
         self.graph.validate_graph()

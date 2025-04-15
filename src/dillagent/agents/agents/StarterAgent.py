@@ -7,18 +7,22 @@ from typing import List, Optional
 from ...llm.LLM import LLM
 
 class StarterAgent(BaseAgent):
-    def __init__(self, llm: LLM, tools: List, intermediate_parser: BaseIntermediateParser, sys_prompt: BaseSysPrompt, name: str = "Starter Agent"):
+    def __init__(self, llm: LLM, tools: List, intermediate_parser: BaseIntermediateParser, sys_prompt: BaseSysPrompt, input_description: str, name: str = "Starter Agent"):
         """
         Initialize the BaseAgent with a list of tools and an optional initial prompt.
 
         Parameters:
+        - llm: The LLM instance to associate with this agent.
         - tools: A list of Tool instances representing the available tools for the agent.
-        - initial_prompt: An optional initial prompt for the agent. If not provided, a prompt will be generated.
+        - intermediate_parsser: The IntermediateParser instance to associate with this agent.
+        - input_description: A description of what the input to this agent should be.
+        - name: The agent's name to be used at runtime.
 
         Returns:
         None
         """
         super().__init__(llm, tools, intermediate_parser, sys_prompt, name)
+        self.input_description = input_description
 
     async def run(self, *, prompt: Optional[str] = None, inputs: Optional[dict] = None):
         """
@@ -35,14 +39,11 @@ class StarterAgent(BaseAgent):
         if inputs:
             # Convert inputs to a formatted string that the agent can understand
             formatted_prompt = inputs.get(f'{self.name}_input', '')
-            print(formatted_prompt)
             output = await self.llm.run(formatted_prompt)
-            print(output)
             return self.intermediate_parser.parse_values(output)
         
         # Otherwise, use the direct prompt
         elif prompt:
-            print(prompt)
             output = await self.llm.run(prompt)
             return self.intermediate_parser.parse_values(output)
         
@@ -67,3 +68,6 @@ class StarterAgent(BaseAgent):
                         return tool.func(to_input)
 
         raise KeyError(f"Tool '{to_call}' not found among registered tools.")
+    
+    def describe(self):
+        return self.input_description

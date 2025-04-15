@@ -8,7 +8,6 @@ class BaseAgentGraph(ABC):
         self.edges = defaultdict(list)           # executor -> downstream executors
         self.reverse_edges = defaultdict(list)   # executor -> upstream executors
         self.executors: Set[BaseAgentExecutor] = set()
-        self._explicit_output_executors: Set[BaseAgentExecutor] = set()
 
     def add_executor(self, executor: BaseAgentExecutor):
         self.executors.add(executor)
@@ -26,14 +25,6 @@ class BaseAgentGraph(ABC):
 
     def get_input_executors(self) -> List[BaseAgentExecutor]:
         return [ex for ex in self.executors if not self.reverse_edges[ex]]
-
-    def register_output_executor(self, executor: BaseAgentExecutor):
-        self._explicit_output_executors.add(executor)
-
-    def get_output_executors(self) -> List[BaseAgentExecutor]:
-        if self._explicit_output_executors:
-            return list(self._explicit_output_executors)
-        raise ValueError("No output executors registered.")
 
     def get_all_executors(self) -> List[BaseAgentExecutor]:
         return list(self.executors)

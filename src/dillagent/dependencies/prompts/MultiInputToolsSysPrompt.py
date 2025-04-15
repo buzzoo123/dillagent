@@ -41,24 +41,6 @@ Provide only ONE action per $JSON_BLOB, as shown:
 }}
 ```
 
-Follow this format:
-
-Question: input question to answer
-Thought: consider previous and subsequent steps
-Action:
-```
-$JSON_BLOB
-```
-Observation: tool output - Note that this is the output from the tool and NOT actually the user
-... (repeat Thought/Action/Observation N times)
-Thought: I know what to respond
-Action:
-```
-{{
-  "action": "<action_name>",
-  "action_input": "<action_input>"
-}}
-
 Begin! ALWAYS respond with a valid json blob of a single action.
 
 Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation'''
