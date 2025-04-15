@@ -43,7 +43,7 @@ Provide only ONE action per $JSON_BLOB, as shown:
 
 Begin! ALWAYS respond with a valid json blob of a single action.
 
-Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation'''
+Use tools if necessary. Format is Action:```$JSON_BLOB```then Observation'''
 
         self.prompt_str = prompt
         return prompt

@@ -8,16 +8,19 @@ class BaseAgentExecutor:
         tool_indicator_key: str = None,       # e.g., "use_tool"
         tool_name_key: str = "action",        # e.g., "tool", "action"
         tool_input_key: str = "action_input", # e.g., "tool_args"
-        tool_output_key: str = None           # e.g., "result", "observation", etc.
+        tool_output_key: str = None,           # e.g., "result", "observation", etc.
+        logging_enabled: bool = False
     ):
         self.agent = agent
         self.tool_indicator_key = tool_indicator_key
         self.tool_name_key = tool_name_key
         self.tool_input_key = tool_input_key
         self.tool_output_key = tool_output_key
+        self.logging_enabled = logging_enabled
 
     async def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         output = await self.agent.run(inputs=inputs)
+        if self.logging_enabled: print(output)
 
         # Check if tool usage is requested -> NEED TO CHANGE TO BOOLEAN
         if self.tool_indicator_key and output.get(self.tool_indicator_key, False):

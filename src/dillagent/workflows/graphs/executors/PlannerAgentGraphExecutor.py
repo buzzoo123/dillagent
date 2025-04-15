@@ -64,9 +64,6 @@ class PlannerAgentGraphExecutor(BaseAgentGraphExecutor):
             if self.logging_enabled: print(planner_input)
             # Ask planner who to run
             _, planner_output = await self._run_executor(self.planner_executor, planner_input)
-            # self.state[self.planner_executor] = planner_output
-
-
 
             if self.logging_enabled: print(planner_output)
 

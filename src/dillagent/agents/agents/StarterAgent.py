@@ -7,7 +7,7 @@ from typing import List, Optional
 from ...llm.LLM import LLM
 
 class StarterAgent(BaseAgent):
-    def __init__(self, llm: LLM, tools: List, intermediate_parser: BaseIntermediateParser, sys_prompt: BaseSysPrompt, input_description: str, name: str = "Starter Agent"):
+    def __init__(self, llm: LLM, tools: List, intermediate_parser: BaseIntermediateParser, sys_prompt: BaseSysPrompt, input_description: str, name: str = "Starter Agent", logging_enabled=False):
         """
         Initialize the BaseAgent with a list of tools and an optional initial prompt.
 
@@ -23,6 +23,7 @@ class StarterAgent(BaseAgent):
         """
         super().__init__(llm, tools, intermediate_parser, sys_prompt, name)
         self.input_description = input_description
+        self.logging_enabled = logging_enabled
 
     async def run(self, *, prompt: Optional[str] = None, inputs: Optional[dict] = None):
         """
@@ -39,7 +40,10 @@ class StarterAgent(BaseAgent):
         if inputs:
             # Convert inputs to a formatted string that the agent can understand
             formatted_prompt = inputs.get(f'{self.name}_input', '')
+            if self.logging_enabled: print(self.llm.messages)
+            if self.logging_enabled: print(formatted_prompt)
             output = await self.llm.run(formatted_prompt)
+            if self.logging_enabled: print(output)
             return self.intermediate_parser.parse_values(output)
         
         # Otherwise, use the direct prompt

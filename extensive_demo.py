@@ -96,7 +96,7 @@ async def main():
     planner_prompt = MultiAgentSupervisorSysPrompt(
         "You are a Planning Agent. Your job is to determine which specialized agents to use. You will be given the current state of execution and available agents to choose from next."
         "For each query, select which agent(s) should process it by returning their names in the 'next_executors' list, "
-        "and provide specific instructions for each selected agent. "
+        "and provide specific inputs for each selected agent by returning their inputs in the <Agentname_input> field."
         "If the query is complete, set 'terminate' to true.\n\n"
         "You must respond in the following format exactly:\n"
         "{\n"
@@ -105,9 +105,11 @@ async def main():
         "  \"SearchAgent_input\": \"Latest news about technology\",\n"
         "  \"terminate\": false\n"
         "}\n\n"
-        "Only return the agents needed for the specific query. Make sure to include appropriate input "
+        "Only return the agents needed for the specific query. If none match, next_executors "
+        "can be left empty to skip to the next execution layer. "
+        "Make sure to include appropriate input "
         "fields for each agent (e.g., 'WeatherAgent_input' for WeatherAgent). "
-        "If all required information has been gathered, set 'terminate' to true."
+        "If all required information has been gathered and the OutputAgent has been used to respond to the user, set 'terminate' to true."
         "Ensure you adhere to the output format. Begin!"
 )
     
@@ -121,13 +123,13 @@ async def main():
     planner_agent = StarterAgent(planner_llm, [], parser, planner_prompt, "", name="PlannerAgent")
     weather_agent = StarterAgent(weather_llm, [get_weather], parser, weather_prompt, "Takes a weather related query in words", name="WeatherAgent")
     search_agent = StarterAgent(search_llm, [search], parser, search_prompt, "Takes an internet search related query in words", name="SearchAgent")
-    output_agent = StarterAgent(output_llm, [respond_to_user], parser, output_prompt, "Takes a string of all relevant information needed for a final answer", name="OutputAgent")
+    output_agent = StarterAgent(output_llm, [respond_to_user], parser, output_prompt, "Takes a string of all relevant information needed for a final answer", name="OutputAgent", logging_enabled=True)
     
     # Create agent executors
     planner_executor = BaseAgentExecutor(planner_agent)
     weather_executor = BaseAgentExecutor(weather_agent, tool_indicator_key="action_input", tool_output_key="tool_result")
     search_executor = BaseAgentExecutor(search_agent, tool_indicator_key="action_input", tool_output_key="tool_result")
-    output_executor = BaseAgentExecutor(output_agent, tool_indicator_key="action_input", tool_output_key="tool_result")
+    output_executor = BaseAgentExecutor(output_agent, tool_indicator_key="action_input", tool_output_key="tool_result", logging_enabled=True)
     
     # Create the agent graph
     graph = BaseAgentGraph()
