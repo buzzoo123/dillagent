@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dillagent"
-version = "1.0.7"
+version = "1.0.8"
 description = "Agentic LLM library"
 authors = ["Dillan Khurana <buzzoo123@users.noreply.github.com>"]
 license = "LICENSE"
