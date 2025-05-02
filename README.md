@@ -2,6 +2,8 @@
 
 DillAgent is an AI agent library based on the principles of *ReAct: Synergizing Reasoning and Acting in Language Models*. While there are existing libraries such as Langchain, Langroid, and Llamaindex, DillAgent takes a different approach by prioritizing modularity and abstraction to provide developers with more control over their LLM-powered applications.
 
+DOCS: https://dillagent.gitbook.io/dillagent-docs/
+
 ## Overview
 
 DillAgent empowers developers by offering a high-level framework while allowing customization of prompts, formatting, and logic patterns - which is necessary when using a non-deterministic technology like an LLM. It provides a structured environment for creating production-ready LLM-powered applications. The key abstractions in DillAgent include:
