@@ -1,14 +1,14 @@
 import asyncio
 from typing import List
-from ..signalFlows.BaseSignalFlow import BaseSignalFlow
+from ..signalFlows.BaseSignalBinding import BaseSignalBinding
 from ..signalFlows.BaseSignal import BaseSignal
 
 class BaseSignalFlowExecutor:
     def __init__(self):
-        self.agents: List[BaseSignalFlow] = []
+        self.agents: List[BaseSignalBinding] = []
         self.queue: asyncio.Queue[BaseSignal] = asyncio.Queue()
 
-    def register(self, signal_flow: BaseSignalFlow):
+    def register(self, signal_flow: BaseSignalBinding):
         self.agents.append(signal_flow)
 
     async def publish(self, signal: BaseSignal):

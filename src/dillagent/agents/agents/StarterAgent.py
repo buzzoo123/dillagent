@@ -7,7 +7,7 @@ from typing import List, Optional
 from ...llm.LLM import LLM
 
 class StarterAgent(BaseAgent):
-    def __init__(self, llm: LLM, tools: List, intermediate_parser: BaseIntermediateParser, sys_prompt: BaseSysPrompt, input_description: str, name: str = "Starter Agent", logging_enabled=False, error_policy=None):
+    def __init__(self, llm: LLM, tools: List[Tool], intermediate_parser: BaseIntermediateParser, sys_prompt: BaseSysPrompt, input_description: str, name: str = "Starter Agent", logging_enabled=False, error_policy=None):
         """
         Initialize the BaseAgent with a list of tools and an optional initial prompt.
 
@@ -37,6 +37,7 @@ class StarterAgent(BaseAgent):
         Returns:
         The response from the LLM
         """
+        tool_results = []
         # If inputs are provided, construct a prompt from them
         if inputs:
             # Convert inputs to a formatted string that the agent can understand
@@ -45,34 +46,28 @@ class StarterAgent(BaseAgent):
             if self.logging_enabled: print(formatted_prompt)
             output = await self.llm.run(formatted_prompt)
             if self.logging_enabled: print(output)
-            return self.intermediate_parser.parse_values(output)
-        
+            
         # Otherwise, use the direct prompt
         elif prompt:
             output = await self.llm.run(prompt)
             return self.intermediate_parser.parse_values(output)
         
+        for response in output:
+            if response.type == "function":
+                tool_result = await self.use_tool(response)
+                tool_results.append(tool_result)
+                
         # Handle the case where neither is provided
         else:
             raise ValueError("Either prompt or inputs must be provided")
         
-    async def use_tool(self, response, to_call, to_input):
+        
+        
+    async def use_tool(self, response):
         for tool in self.tools:
-            if to_call == tool.name:
-                if isinstance(to_input, dict):
-                    if asyncio.iscoroutinefunction(tool.func):
-                        return await tool.func(**to_input)
-                    else:
-                        return tool.func(**to_input)
-                elif isinstance(to_input, list):
-                    raise ValueError("LLM produced list of parameters - invalid format. Must be a dict or single value.")
-                else:
-                    if asyncio.iscoroutinefunction(tool.func):
-                        return await tool.func(to_input)
-                    else:
-                        return tool.func(to_input)
-
-        raise KeyError(f"Tool '{to_call}' not found among registered tools.")
+            if response.name == tool.name:
+                output = await tool.execute()
+                return output
     
     def describe(self):
         return self.input_description

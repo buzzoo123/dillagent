@@ -4,7 +4,7 @@ from .BaseSignal import BaseSignal
 from ....agents.executors.BaseAgentExecutor import BaseAgentExecutor
 
 @dataclass
-class BaseSignalFlow:
+class BaseSignalBinding:
     agent_name: str
     executor: BaseAgentExecutor
     subscribed_signal_types: List[str]

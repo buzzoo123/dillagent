@@ -1,2 +1,2 @@
 from .BaseSignal import BaseSignal
-from .BaseSignalFlow import BaseSignalFlow
+from .BaseSignalBinding import BaseSignalBinding
